@@ -35,19 +35,39 @@ const addGoal = {
   }
 }
 
-const removeTodo = {
+const removeGoal = {
   // Event identifier to remove a goal
   type: 'REMOVE_TODO',
   // The goal object to be removed
   id:0
 }
 
+// REDUCER FUNCTION:
+// We want to make our Reducer as predictable as possible and hence it has to be a pure function.
+// We will defined specific rules for specific actions only and in the rest of the cases, if the
+// action is not recognized, then the state will be returned as is.
+// Function to handle Todos
+function todos(state=[] /* The current state, if it's undefined then initialize it to an empty array */, 
+               action /* The action that was dispatched */) {
+    switch(action.type) {
+      case 'ADD_TODO':
+        return state.concat([action.todo]); // Since Reducer has to be a pure function, it can't mutate the state and hence we are using .concat()
+      case 'REMOVE_TODO':
+        return state.filter((todo) => todo.id !== action.id)
+      case 'TOGGLE_TODO':
+        return state.map((todo) => todo.id !== action.id ? todo : Object.assign({}, todo, {completed: !todo.completed}));
+      default:
+        return state; // If no action is matched, then return the state as is.
+    }
+}
+
+// STORE:
 // The store has four parts:
 // 1. The State
 // 2. Get the state
 // 3. Listen to changes on the state
 // 4. Update the state
-function createStore() {
+function createStore(reducer) {
   // Initial state
   let state;
 
@@ -75,13 +95,69 @@ function createStore() {
   // maintain predictability of our application. We should not allow anything to update the
   // state of our store. This is achieved through having a set of actions which will update
   // the store in a specific way. Kind of like a play book for professional sport teams.
+  // For updating the stae we will use a dispatcher which will dispath the action to the 
+  // reducer
+  const dispatch = (action) => {
+    // Get the updated state
+    state = reducer(state, action);
+    // Notify all the objects listening to the store that the store was updated
+    listeners.forEach((listener) => listener());
+  }
   
   // The store object
   return {
       getState,
-      subscribe
+      subscribe,
+      dispatch
   };
 }
 
 // Create a new store
-const store = createStore();
+const store = createStore(todos);
+
+const unsubscribe = store.subscribe(() => {
+  console.log('The new store is: ', store.getState());
+})
+
+store.dispatch({
+  // Event identifier to add a todo
+  type: 'ADD_TODO',
+  // The todo object to be added
+  todo: {
+    id: 0,
+    name: 'Learn Redux',
+    completed: false
+  }
+})
+
+store.dispatch({
+  // Event identifier to add a todo
+  type: 'ADD_TODO',
+  // The todo object to be added
+  todo: {
+    id: 1,
+    name: 'Learn Vue.js',
+    completed: false
+  }
+})
+
+store.dispatch({
+  // Event identifier to add a todo
+  type: 'ADD_TODO',
+  // The todo object to be added
+  todo: {
+    id: 2,
+    name: 'Learn Snowboarding',
+    completed: false
+  }
+})
+
+store.dispatch({
+  type: 'TOGGLE_TODO',
+  id: 0
+})
+
+store.dispatch({
+  type: 'REMOVE_TODO',
+  id: 2
+})
