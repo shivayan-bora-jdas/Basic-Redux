@@ -1,46 +1,4 @@
-// REDUCER FUNCTION:
-// We want to make our Reducer as predictable as possible and hence it has to be a pure function.
-// We will defined specific rules for specific actions only and in the rest of the cases, if the
-// action is not recognized, then the state will be returned as is.
-// Function to handle Todos i.e. Todos Reducer
-function todos(state = [] /* The current state, if it's undefined then initialize it to an empty array */,
-  action /* The action that was dispatched */) {
-  switch (action.type) {
-    case 'ADD_TODO':
-      return state.concat([action.todo]); // Since Reducer has to be a pure function, it can't mutate the state and hence we are using .concat()
-    case 'REMOVE_TODO':
-      return state.filter((todo) => todo.id !== action.id)
-    case 'TOGGLE_TODO':
-      return state.map((todo) => todo.id !== action.id ? todo : Object.assign({}, todo, { completed: !todo.completed }));
-    default:
-      return state; // If no action is matched, then return the state as is.
-  }
-}
-
-// Function to handle Goals. i.e. Goals  Reducer
-function goals(state = [] /* The current state, if it's undefined then initialize it to an empty array */,
-  action /* The action that was dispatched */) {
-  switch (action.type) {
-    case 'ADD_GOAL':
-      return state.concat([action.goal]); // Since Reducer has to be a pure function, it can't mutate the state and hence we are using .concat()
-    case 'REMOVE_GOAL':
-      return state.filter((goal) => goal.id !== action.id)
-    default:
-      return state; // If no action is matched, then return the state as is.
-  }
-}
-
-// Since we have two pieces of state here, i.e. goals and todos, and currently, we are only passing
-// the todos reducer to the store to handle todos only, we will need a root reducer that will sort
-// of combine these two individual reducers and pass it to the store so that the appropriate action
-// is dispatched to the appropriate reducer.
-function app(state = {}, action) {
-  return {
-    todos: todos(state.todos, action),
-    goals: goals(state.goals, action)
-  }
-}
-
+// Library Code
 // STORE:
 // The store has four parts:
 // 1. The State
@@ -92,92 +50,139 @@ function createStore(reducer) {
   };
 }
 
+// App Code
+// Constants:
+const ADD_TODO = 'ADD_TODO';
+const TOGGLE_TODO = 'TOGGLE_TODO';
+const REMOVE_TODO = 'REMOVE_TODO';
+
+const ADD_GOAL = 'ADD_GOAL';
+const REMOVE_GOAL = 'REMOVE_GOAL';
+
+function addTodoAction(todo) {
+  return {
+    type: ADD_TODO,
+    todo
+  };
+}
+
+function toggleTodoAction(id) {
+  return {
+    type: TOGGLE_TODO,
+    id
+  };
+}
+
+function removeTodoAction(id) {
+  return {
+    type: REMOVE_TODO,
+    id
+  };
+}
+
+function addGoalAction(goal) {
+  return {
+    type: ADD_GOAL,
+    goal
+  };
+}
+
+function removeGoalAction(id) {
+  return {
+    type: REMOVE_GOAL,
+    id
+  };
+}
+
+// REDUCER FUNCTION:
+// We want to make our Reducer as predictable as possible and hence it has to be a pure function.
+// We will defined specific rules for specific actions only and in the rest of the cases, if the
+// action is not recognized, then the state will be returned as is.
+// Function to handle Todos i.e. Todos Reducer
+function todos(state = [] /* The current state, if it's undefined then initialize it to an empty array */,
+  action /* The action that was dispatched */) {
+  switch (action.type) {
+    case ADD_TODO:
+      return state.concat([action.todo]); // Since Reducer has to be a pure function, it can't mutate the state and hence we are using .concat()
+    case REMOVE_TODO:
+      return state.filter((todo) => todo.id !== action.id)
+    case TOGGLE_TODO:
+      return state.map((todo) => todo.id !== action.id ? todo : Object.assign({}, todo, { completed: !todo.completed }));
+    default:
+      return state; // If no action is matched, then return the state as is.
+  }
+}
+
+// Function to handle Goals. i.e. Goals  Reducer
+function goals(state = [] /* The current state, if it's undefined then initialize it to an empty array */,
+  action /* The action that was dispatched */) {
+  switch (action.type) {
+    case ADD_GOAL:
+      return state.concat([action.goal]); // Since Reducer has to be a pure function, it can't mutate the state and hence we are using .concat()
+    case REMOVE_GOAL:
+      return state.filter((goal) => goal.id !== action.id)
+    default:
+      return state; // If no action is matched, then return the state as is.
+  }
+}
+
+// Since we have two pieces of state here, i.e. goals and todos, and currently, we are only passing
+// the todos reducer to the store to handle todos only, we will need a root reducer that will sort
+// of combine these two individual reducers and pass it to the store so that the appropriate action
+// is dispatched to the appropriate reducer.
+function app(state = {}, action) {
+  return {
+    todos: todos(state.todos, action),
+    goals: goals(state.goals, action)
+  };
+}
+
 // Create a new store
 // Root reducer is now passed on to the store
 const store = createStore(app);
 
 const unsubscribe = store.subscribe(() => {
   console.log('The new store is: ', store.getState());
-})
+});
 
 // ACTIONS: Actions are objects that represents the type of event that can occur in our 
 // application to change the state of our store
-store.dispatch({
-  // Event identifier to add a todo
-  type: 'ADD_TODO',
-  // The todo object to be added
-  todo: {
-    id: 0,
-    name: 'Learn Redux',
-    completed: false
-  }
-})
+store.dispatch(addTodoAction({
+  id: 0,
+  name: 'Learn Redux',
+  completed: false
+}));
 
-store.dispatch({
-  // Event identifier to add a todo
-  type: 'ADD_TODO',
-  // The todo object to be added
-  todo: {
-    id: 1,
-    name: 'Learn Vue.js',
-    completed: false
-  }
-})
+store.dispatch(addTodoAction({
+  id: 1,
+  name: 'Learn Vue.js',
+  completed: false
+}));
 
-store.dispatch({
-  // Event identifier to add a todo
-  type: 'ADD_TODO',
-  // The todo object to be added
-  todo: {
-    id: 2,
-    name: 'Learn Snowboarding',
-    completed: false
-  }
-})
+store.dispatch(addTodoAction({
+  id: 2,
+  name: 'Learn Snowboarding',
+  completed: false
+}));
 
-store.dispatch({
-  type: 'TOGGLE_TODO',
-  id: 0
-})
 
-store.dispatch({
-  type: 'REMOVE_TODO',
-  id: 2
-})
+store.dispatch(toggleTodoAction(0));
 
-store.dispatch({
-  // Event identifier to add a long term goal
-  type: 'ADD_GOAL',
-  // The goal object to be added
-  goal: {
-    id: 0,
-    name: 'Run a Marathon',
-  }
-})
+store.dispatch(removeTodoAction(2));
 
-store.dispatch({
-  // Event identifier to add a long term goal
-  type: 'ADD_GOAL',
-  // The goal object to be added
-  goal: {
-    id: 1,
-    name: 'Open a company',
-  }
-})
+store.dispatch(addGoalAction({
+  id: 0,
+  name: 'Run a Marathon',
+}));
 
-store.dispatch({
-  // Event identifier to add a long term goal
-  type: 'ADD_GOAL',
-  // The goal object to be added
-  goal: {
-    id: 2,
-    name: 'Gain six pack',
-  }
-})
+store.dispatch(addGoalAction({
+  id: 1,
+  name: 'Open a company',
+}));
 
-store.dispatch({
-  // Event identifier to remove a goal
-  type: 'REMOVE_GOAL',
-  // The goal object to be removed
-  id: 1
-})
+store.dispatch(addGoalAction({
+  id: 2,
+  name: 'Gain six pack',
+}));
+
+store.dispatch(removeGoalAction(1));
