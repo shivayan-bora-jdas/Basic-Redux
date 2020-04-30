@@ -1,3 +1,8 @@
+// ID Generator
+function generateId() {
+  return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+}
+
 // Library Code
 // STORE:
 // The store has four parts:
@@ -186,3 +191,30 @@ store.dispatch(addGoalAction({
 }));
 
 store.dispatch(removeGoalAction(1));
+
+// DOM Code:
+function addTodo() {
+  const input = document.getElementById('todo');
+  const name = input.value;
+  input.value = "";
+
+  store.dispatch(addTodoAction({
+    id: generateId(),
+    name,
+    completed: false
+  }));
+}
+
+function addGoal() {
+  const input = document.getElementById('goal');
+  const name = input.value;
+  input.value = "";
+
+  store.dispatch(addGoalAction({
+    id: generateId(),
+    name,
+  }));
+}
+
+document.getElementById('todoBtn').addEventListener('click', addTodo);
+document.getElementById('goalBtn').addEventListener('click', addGoal);
