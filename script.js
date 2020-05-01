@@ -146,53 +146,103 @@ function app(state = {}, action) {
 // Root reducer is now passed on to the store
 const store = createStore(app);
 
+// Subscribe to the store
 const unsubscribe = store.subscribe(() => {
-  console.log('The new store is: ', store.getState());
+  const { todos, goals } = store.getState();
+
+  // This is to clear out the list since after the state gets updated we will loop through all the
+  // items and add it in the ul, it should not get added multiple times in the list.
+  document.getElementById('todos').innerHTML = '';
+  document.getElementById('goals').innerHTML = '';
+
+  goals.forEach(addGoalToDOM);
+  todos.forEach(addTodoToDOM);
 });
 
 // ACTIONS: Actions are objects that represents the type of event that can occur in our 
 // application to change the state of our store
-store.dispatch(addTodoAction({
-  id: 0,
-  name: 'Learn Redux',
-  completed: false
-}));
+// store.dispatch(addTodoAction({
+//   id: 0,
+//   name: 'Learn Redux',
+//   completed: false
+// }));
 
-store.dispatch(addTodoAction({
-  id: 1,
-  name: 'Learn Vue.js',
-  completed: false
-}));
+// store.dispatch(addTodoAction({
+//   id: 1,
+//   name: 'Learn Vue.js',
+//   completed: false
+// }));
 
-store.dispatch(addTodoAction({
-  id: 2,
-  name: 'Learn Snowboarding',
-  completed: false
-}));
+// store.dispatch(addTodoAction({
+//   id: 2,
+//   name: 'Learn Snowboarding',
+//   completed: false
+// }));
 
 
-store.dispatch(toggleTodoAction(0));
+// store.dispatch(toggleTodoAction(0));
 
-store.dispatch(removeTodoAction(2));
+// store.dispatch(removeTodoAction(2));
 
-store.dispatch(addGoalAction({
-  id: 0,
-  name: 'Run a Marathon',
-}));
+// store.dispatch(addGoalAction({
+//   id: 0,
+//   name: 'Run a Marathon',
+// }));
 
-store.dispatch(addGoalAction({
-  id: 1,
-  name: 'Open a company',
-}));
+// store.dispatch(addGoalAction({
+//   id: 1,
+//   name: 'Open a company',
+// }));
 
-store.dispatch(addGoalAction({
-  id: 2,
-  name: 'Gain six pack',
-}));
+// store.dispatch(addGoalAction({
+//   id: 2,
+//   name: 'Gain six pack',
+// }));
 
-store.dispatch(removeGoalAction(1));
+// store.dispatch(removeGoalAction(1));
 
 // DOM Code:
+
+function addTodoToDOM(todo) {
+  const node = document.createElement('li');
+  const text = document.createTextNode(todo.name);
+
+  const removeBtn = createRemoveBtn(() => {
+    store.dispatch(removeTodoAction(todo.id));
+  })
+
+  node.appendChild(text);
+  node.appendChild(removeBtn);
+
+  node.style.textDecoration = todo.completed ? 'line-through' : 'none';
+  node.addEventListener('click', () => {
+    store.dispatch(toggleTodoAction(todo.id));
+  })
+
+  document.getElementById('todos').appendChild(node);
+}
+
+function addGoalToDOM(goal) {
+  const node = document.createElement('li');
+  const text = document.createTextNode(goal.name);
+
+  const removeBtn = createRemoveBtn(() => {
+    store.dispatch(removeGoalAction(goal.id));
+  })
+
+  node.appendChild(text);
+  node.appendChild(removeBtn);
+
+  document.getElementById('goals').appendChild(node);
+}
+
+function createRemoveBtn(callback) {
+  const removeBtn = document.createElement('button');
+  removeBtn.innerHTML = 'X';
+  removeBtn.addEventListener('click', callback);
+  return removeBtn;
+}
+
 function addTodo() {
   const input = document.getElementById('todo');
   const name = input.value;
