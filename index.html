@@ -34,46 +34,107 @@
         const List = (props) => {
             return (
                 <ul>
-                    <li>List Item</li>
+                    {props.items.map((item) =>
+                        (<li key={item.id}>
+                            <span onClick={() => props.toggle && props.toggle(item)} style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>{item.name}</span>
+                            <button onClick={() => props.remove(item)}>X</button>
+                        </li>
+                        ))}
                 </ul>
             );
         }
 
 
         class Todos extends React.Component {
+            addItem = (e) => {
+                e.preventDefault();
+                const name = this.input.value;
+                this.input.value = '';
+                this.props.store.dispatch(addTodoAction({
+                    id: generateId(),
+                    name,
+                    completed: false,
+                }));
+            }
+
+            removeTodo = (todo) => {
+                this.props.store.dispatch(removeTodoAction(todo.id))
+            }
+
+            toggleTodo = (todo) => {
+                this.props.store.dispatch(toggleTodoAction(todo.id))
+            }
+
             render() {
                 return (
                     <div>
                         <h1>Todo List</h1>
-                        <List />
+                        <input
+                            type='text'
+                            placeholder='Add Todo'
+                            // This will allow the input text to be grabbed without adding it to the state bygiving a reference to the input
+                            ref={(input) => this.input = input} />
+                        <button onClick={this.addItem}>Add Todo</button>
+                        <List items={this.props.todos} remove={this.removeTodo} toggle={this.toggleTodo} />
                     </div>
                 );
             }
         }
 
         class Goals extends React.Component {
+            addItem = (e) => {
+                e.preventDefault();
+                const name = this.input.value;
+                this.input.value = '';
+                this.props.store.dispatch(addGoalAction({
+                    id: generateId(),
+                    name,
+                }));
+            }
+
+            removeGoal = (goal) => {
+                this.props.store.dispatch(removeGoalAction(goal.id))
+            }
+
             render() {
                 return (
                     <div>
                         <h1>Goals</h1>
-                        <List />
+                        <input
+                            type='text'
+                            placeholder='Add Goal'
+                            // This will allow the input text to be grabbed without adding it to the state bygiving a reference to the input
+                            ref={(input) => this.input = input} />
+                        <button onClick={this.addItem}>Add Goal</button>
+                        <List items={this.props.goals} remove={this.removeGoal} />
                     </div>
                 );
             }
         }
 
         class App extends React.Component {
+            componentDidMount() {
+                const { store } = this.props;
+
+                // Even though we are modifying the store, there is no state inherently inside this component and hence it is unable to realise
+                // when the state changes and when it should re-render the DOM. So like the previous case, this component needs to subscribe the
+                // store and when the store gets updated, it should forcefully render the component(This is an anti-pattern and not used but in this
+                // case it makes sense)
+                store.subscribe(() => this.forceUpdate());
+            }
             render() {
+                const { store } = this.props;
+                const { todos, goals } = store.getState();
                 return (
                     <div>
-                        <Todos />
-                        <Goals />
+                        <Todos todos={todos} store={store} />
+                        <Goals goals={goals} store={store} />
                     </div>
                 );
             }
         }
 
-        ReactDOM.render(<App />, document.getElementById('app'));
+        ReactDOM.render(<App store={store} />, document.getElementById('app'));
     </script>
 </body>
 
