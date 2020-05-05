@@ -11,6 +11,7 @@ const REMOVE_TODO = 'REMOVE_TODO';
 
 const ADD_GOAL = 'ADD_GOAL';
 const REMOVE_GOAL = 'REMOVE_GOAL';
+const RECEIVE_DATA = 'RECEIVE_DATA';
 
 // Redux Middleware implementation: This will hijack our action dispatcher and will check the
 // contents of the actions first and then call store.dispatch for the respective action
@@ -72,6 +73,14 @@ function removeGoalAction(id) {
   };
 }
 
+function receiveDataFromAPI(todos, goals) {
+  return {
+    type: RECEIVE_DATA,
+    todos,
+    goals
+  };
+}
+
 // REDUCER FUNCTION:
 // We want to make our Reducer as predictable as possible and hence it has to be a pure function.
 // We will defined specific rules for specific actions only and in the rest of the cases, if the
@@ -86,6 +95,8 @@ function todos(state = [] /* The current state, if it's undefined then initializ
       return state.filter((todo) => todo.id !== action.id)
     case TOGGLE_TODO:
       return state.map((todo) => todo.id !== action.id ? todo : Object.assign({}, todo, { completed: !todo.completed }));
+    case RECEIVE_DATA:
+      return action.todos
     default:
       return state; // If no action is matched, then return the state as is.
   }
@@ -99,8 +110,19 @@ function goals(state = [] /* The current state, if it's undefined then initializ
       return state.concat([action.goal]); // Since Reducer has to be a pure function, it can't mutate the state and hence we are using .concat()
     case REMOVE_GOAL:
       return state.filter((goal) => goal.id !== action.id)
+    case RECEIVE_DATA:
+      return action.goals
     default:
       return state; // If no action is matched, then return the state as is.
+  }
+}
+
+function loading(state = true, action) {
+  switch (action.type) {
+    case RECEIVE_DATA:
+      return false;
+    default:
+      return state;
   }
 }
 
@@ -113,5 +135,6 @@ function goals(state = [] /* The current state, if it's undefined then initializ
 // Root reducer is now passed on to the store
 const store = Redux.createStore(Redux.combineReducers({
   todos,
-  goals
+  goals,
+  loading
 }), Redux.applyMiddleware(checker, logger));

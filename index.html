@@ -9,6 +9,7 @@
     <script src='https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js'></script>
     <script src='https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js'></script>
     <script src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js'></script>
+    <script src='https://tylermcginnis.com/goals-todos-api/index.js'></script>
 </head>
 
 <body>
@@ -21,7 +22,7 @@
                 <ul>
                     {props.items.map((item) =>
                         (<li key={item.id}>
-                            <span onClick={() => props.toggle && props.toggle(item)} style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>{item.name}</span>
+                            <span onClick={() => props.toggle && props.toggle(item)} style={{ textDecoration: item.complete ? 'line-through' : 'none' }}>{item.name}</span>
                             <button onClick={() => props.remove(item)}>X</button>
                         </li>
                         ))}
@@ -38,7 +39,7 @@
                 this.props.store.dispatch(addTodoAction({
                     id: generateId(),
                     name,
-                    completed: false,
+                    complete: false,
                 }));
             }
 
@@ -101,6 +102,13 @@
             componentDidMount() {
                 const { store } = this.props;
 
+                Promise.all([
+                    API.fetchTodos(),
+                    API.fetchGoals()
+                ]).then(([todos, goals]) => {
+                    store.dispatch(receiveDataFromAPI(todos, goals));
+                });
+
                 // Even though we are modifying the store, there is no state inherently inside this component and hence it is unable to realise
                 // when the state changes and when it should re-render the DOM. So like the previous case, this component needs to subscribe the
                 // store and when the store gets updated, it should forcefully render the component(This is an anti-pattern and not used but in this
@@ -109,7 +117,12 @@
             }
             render() {
                 const { store } = this.props;
-                const { todos, goals } = store.getState();
+                const { todos, goals, loading } = store.getState();
+
+                if (loading) {
+                    return (<h3>Loading...</h3>);
+                }
+
                 return (
                     <div>
                         <Todos todos={todos} store={store} />
